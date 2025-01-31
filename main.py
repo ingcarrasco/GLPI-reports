@@ -5,6 +5,7 @@ import os
 import sshtunnel
 from sshtunnel import SSHTunnelForwarder
 import pymysql
+from datetime import datetime
 
 load_dotenv()
 
@@ -87,23 +88,7 @@ def leer_usuarios(list1):
         '''
     return pd.read_sql_query(query, connection)
 
-
-# 1911 Angel Arturo Carrasco Avila
-# 2405 Jaime Arturo Gutierrez Rubio
-
-# 993 Manuel Edgardo Morales Yañez
-# 1525 Israel Marin
-# 1885 Israel Alejandro Marin Piña
-
 # ########## Ingenieros de sitio
-# 2620 Daniel Bellot
-# 27 Carlos Alberto Castelo Gonzalez
-# 2477 Martin Arvizu Posos
-# 2921 Maria Guadalupe Antonio Rita
-# 4410 Jose Manuel Zamudio Lopez
-# 5500 David Alejandro Triana Ochoa
-
-
 query = '''
 SELECT 
     *
@@ -112,10 +97,15 @@ FROM
 '''
 x = run_query(query)
 x['nombre'] = x['firstname'] + ' ' + x['realname']
-# x
-# filter= x['is_active'] == 1
-# view = x.where(filter)
-# view['name','realname','profiles_id']
+
+filtro = ( x["is_active"]== 1 ) & ( x["profiles_id"].isin([3,6]) )
+tecnicos= x[filtro]
+
+query = '''
+SELECT * FROM glpi_tickets_users
+WHERE type = 2;
+'''
+x = run_query(query)
 
 close_ssh_tunnel()
 mysql_disconnect()
@@ -123,19 +113,55 @@ mysql_disconnect()
 #### Preview 
 st.markdown('# '+ APP_TITLE)
 
-filtro = ( x["is_active"]== 1 ) & ( x["profiles_id"].isin([3,6]) )
-tecnicos= x[filtro]
-# st.markdown('# Tecnicos')
-# tecnicos[['id','name','nombre']]
+st.logo(
+    'images/new-logo.png',
+    link="https://streamlit.io/gallery",
+    # icon_image='images/solana.png',
+)
 
+current_day = datetime.now().day
+current_month = datetime.now().month
+current_year = datetime.now().year
+
+i =2021
+while i <= current_year:
+    print(i)
+    i += 1
+op_anio_hoy=[]
+op_mes_hoy=[]
+####### Agregamos el Sidebar
 with st.sidebar:
-    opcion = st.radio(
+    op_ingeniero = st.selectbox(
         "Seleciona algun ingeniero:",
         (tecnicos[['nombre']].sort_values(by='nombre'))
     )
+    i =2021
+    while i <= current_year:
+        op_anio_hoy.append(str(i))
+        i += 1
+    op_anio = st.selectbox(
+        "Seleciona el año a evaluar:",
+        (op_anio_hoy),
+    )
+    i = 1
+    while i <= 12:
+        op_mes_hoy.append(i)
+        i += 1
+    op_anio = st.selectbox(
+        "Seleciona mes:",
+        (op_mes_hoy),
+    )
 
-st.markdown('### '+ opcion)
-filtro = (tecnicos['nombre']==opcion)
-tecnicos['id'][filtro]
+st.markdown('### '+ op_ingeniero)
+filtro = (tecnicos['nombre']==op_ingeniero)
+id_tecnico= tecnicos['id'][filtro]
+st.metric(label='Total de tickets', value=len(x.index))
+
+filtro = (x['users_id']==id_tecnico.values[0])
+ticket_ingeniero= x[filtro]
+st.metric(label='Total ingeniero', value=len(ticket_ingeniero.index))
+
+promedio_tickets = len(ticket_ingeniero.index)/len(x.index)
+st.metric(label='Promedio Tickets (%)', value=round(promedio_tickets*100,4))
 
 
