@@ -107,15 +107,32 @@ WHERE type = 2;
 '''
 x = run_query(query)
 
+query = '''
+SELECT 
+    id as id_ticket, date_creation, 
+    closedate, solvedate,
+    users_id_recipient, itilcategories_id,
+    type, time_to_resolve,
+    time_to_own, sla_waiting_duration,
+    internal_time_to_resolve, waiting_duration
+    solve_delay_stat, locations_id 
+FROM glpi_tickets
+    WHERE is_deleted = 0;
+'''
+tickets = run_query(query)
+tickets['year'] = tickets['date_creation'].dt.year
+tickets['month'] = tickets['date_creation'].dt.month
+# tickets['year']  = pd.DatetimeIndex(tickets['date_creation']).year
+# tickets['month']  = pd.DatetimeIndex(tickets['date_creation']).month
+
 close_ssh_tunnel()
 mysql_disconnect()
 
 #### Preview 
 st.markdown('# '+ APP_TITLE)
-
 st.logo(
     'images/new-logo.png',
-    link="https://streamlit.io/gallery",
+    link="https://gruposolana.com",
     # icon_image='images/solana.png',
 )
 
@@ -124,9 +141,6 @@ current_month = datetime.now().month
 current_year = datetime.now().year
 
 i =2021
-while i <= current_year:
-    print(i)
-    i += 1
 op_anio_hoy=[]
 op_mes_hoy=[]
 ####### Agregamos el Sidebar
@@ -136,6 +150,7 @@ with st.sidebar:
         (tecnicos[['nombre']].sort_values(by='nombre'))
     )
     i =2021
+    op_anio_hoy.append('Todos')
     while i <= current_year:
         op_anio_hoy.append(str(i))
         i += 1
@@ -144,10 +159,11 @@ with st.sidebar:
         (op_anio_hoy),
     )
     i = 1
+    op_mes_hoy.append('Todos')
     while i <= 12:
-        op_mes_hoy.append(i)
+        op_mes_hoy.append(str(i))
         i += 1
-    op_anio = st.selectbox(
+    op_mes = st.selectbox(
         "Seleciona mes:",
         (op_mes_hoy),
     )
@@ -155,13 +171,35 @@ with st.sidebar:
 st.markdown('### '+ op_ingeniero)
 filtro = (tecnicos['nombre']==op_ingeniero)
 id_tecnico= tecnicos['id'][filtro]
-st.metric(label='Total de tickets', value=len(x.index))
+if op_anio == 'Todos' and op_mes == 'Todos':
+    print(1)
+    tickets_filtrado = tickets
+elif op_anio != 'Todos' and op_mes == 'Todos':
+    print(2)
+    filtro = ( tickets["year"]== int(op_anio) )
+    tickets_filtrado = tickets[filtro]
+elif op_anio == 'Todos' and op_mes != 'Todos':
+    print(3)
+    filtro = ( tickets["month"]== int(op_mes) )
+    tickets_filtrado = tickets[filtro]
+elif op_anio != 'Todos' and op_mes != 'Todos':
+    filtro = ( tickets["year"]== int(op_anio) ) & ( tickets["month"]== int(op_mes) )
+    print(4)
+    tickets_filtrado = tickets[filtro]
+
+
+print(op_anio)
+print(op_mes)
+
+st.metric(label='Total de tickets', value=len(tickets.index))
+st.metric(label='Total de mes(es)', value=len(tickets_filtrado.index))
 
 filtro = (x['users_id']==id_tecnico.values[0])
 ticket_ingeniero= x[filtro]
-st.metric(label='Total ingeniero', value=len(ticket_ingeniero.index))
+st.metric(label='Total ingeniero', value=len(tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])]))
 
-promedio_tickets = len(ticket_ingeniero.index)/len(x.index)
+
+promedio_tickets = len(tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])])/len(tickets_filtrado.index)
 st.metric(label='Promedio Tickets (%)', value=round(promedio_tickets*100,4))
 
 
