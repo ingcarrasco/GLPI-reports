@@ -22,7 +22,10 @@ numpy==2.2.2
 packaging==24.2
 pandas==2.2.3
 paramiko==3.5.0
+patsy==1.0.1
 pillow==11.1.0
+plotly==6.0.0
+plotly-express==0.4.1
 protobuf==5.29.3
 pyarrow==19.0.0
 pycparser==2.22
@@ -37,9 +40,11 @@ referencing==0.36.2
 requests==2.32.3
 rich==13.9.4
 rpds-py==0.22.3
+scipy==1.15.1
 six==1.17.0
 smmap==5.0.2
 sshtunnel==0.4.0
+statsmodels==0.14.4
 streamlit==1.41.1
 tenacity==9.0.0
 toml==0.10.2
