@@ -1,0 +1,10 @@
+services:
+    app:
+        container_name: report-glpi
+        build: ./
+        command: streamlit run app/main.py --server.port 8501
+        volumes:
+            - ./app:/app
+        ports:
+            - 8593:8501
+        # image: yourstreamlitapp:latest

@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 from dotenv import load_dotenv
 import os
 import sshtunnel
@@ -8,13 +9,7 @@ import pymysql
 from datetime import datetime
 import plotly.express as px
 
-data = pd.DataFrame(
-    {
-        "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
-        "Amount": [4, 1, 2, 2, 4, 46],
-        "City": ["SF", "SF", "SF", "Montreal", "Montreal", "Montreal"],
-    }
-)
+
 
 load_dotenv()
 
@@ -119,12 +114,13 @@ x = run_query(query)
 query = '''
 SELECT 
     id as id_ticket, date_creation, 
-    closedate, solvedate,
+    closedate, solvedate, status,
     users_id_recipient, itilcategories_id,
     type, time_to_resolve,
     time_to_own, sla_waiting_duration,
     internal_time_to_resolve, waiting_duration
-    solve_delay_stat, locations_id 
+    solve_delay_stat, locations_id
+    
 FROM glpi_tickets
     WHERE is_deleted = 0;
 '''
@@ -140,6 +136,18 @@ mysql_disconnect()
 #### Preview 
 st.set_page_config(layout="wide")
 st.markdown('# '+ APP_TITLE)
+##### Borra el boton de Deploy
+st.markdown(
+    """
+    <style>
+        .stAppDeployButton {
+            visibility: hidden;
+        }
+    </style>
+    """, 
+    unsafe_allow_html=True
+)
+
 st.logo(
     'images/new-logo.png',
     link="https://gruposolana.com",
@@ -201,23 +209,35 @@ elif op_anio != 'Todos' and op_mes != 'Todos':
 print(op_anio)
 print(op_mes)
 col1, col2, col3, col4 = st.columns(4)
+filtro = (x['users_id']==id_tecnico.values[0])
+ticket_ingeniero= x[filtro]
+
+data2 = pd.DataFrame(
+    {
+        "Etiqueta": ['Total', "Tickets Ingeniero",],
+        "Cantidad": [len(tickets_filtrado.index)-len(tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])]), len(tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])])],
+    }
+)
+ 
+graph_tickets_tot_ing = px.pie(data2,labels='Etiqueta', values='Cantidad', title='Año('+op_anio+') mes('+op_mes+')')
+
+print(len(tickets_filtrado.index))
 with col1:
     st.metric(label='Total de tickets (2021 Hasta hoy)', value=len(tickets.index))
     st.metric(label='1.Por agencia', value=0)
     st.metric(label='5.Tiempo promedio por ticket.',value=0)
-
+    graph_tickets_tot_ing
+    
 with col2:
+    
     st.metric(label='Total año('+op_anio+') mes('+op_mes+')', value=len(tickets_filtrado.index))
     st.metric(label='2.Por usuario',value=0)
     st.metric(label='6.Ticket con mas tiempo por resolver.',value=0)
 
-filtro = (x['users_id']==id_tecnico.values[0])
-ticket_ingeniero= x[filtro]
-graph = px.pie(data, values='Amount', names='Fruit')
+
 with col3:
     st.metric(label='Total ingeniero', value=len(tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])]))
     st.metric(label='3.Abiertos',value=0)
-    graph
 
 
 promedio_tickets = len(tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])])/len(tickets_filtrado.index)
@@ -227,8 +247,15 @@ with col4:
     st.metric(label='4.Terminados',value=0)
 
 
-
-
+x = tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])]
+x = x[x['status']!=5]
+x = x[x['status']!=6]
+x
+# 1 En Curso
+# 2 En Curso
+# 4 En Espera
+# 5 Resuelto
+# 6 Cerrado
 
 
 
