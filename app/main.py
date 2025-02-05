@@ -134,7 +134,7 @@ close_ssh_tunnel()
 mysql_disconnect()
 
 #### Preview 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title=APP_TITLE, page_icon=None, layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.markdown('# '+ APP_TITLE)
 ##### Borra el boton de Deploy
 st.markdown(

@@ -1,3 +1,17 @@
+# GLPI-Reports
+
+Es un proyecto para analizar los tickets creados en GLPI 9.5.0
+
+## Ejecutar dashboard
+```sh
+git clone https://github.com/ingcarrasco/GLPI-reports.git && cd ./GLPI-reports && docker compose up -d
+```
+
+
+
+
+
+
 ##### …or create a new repository on the command line
 ```sh
 echo "# GLPI-reports" >> README.md
@@ -16,3 +30,4 @@ git remote add origin https://github.com/ingcarrasco/GLPI-reports.git
 git branch -M main
 git push -u origin main
 ```
+
