@@ -4,7 +4,8 @@ FROM python:3.10-slim
 WORKDIR /app
 
 COPY ./app /app
-RUN apt update -y && apt install openssh-client
+RUN apt update 
+RUN apt install openssh-client
 RUN pip install -r requirements.txt
 
 EXPOSE 8501
