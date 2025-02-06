@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY ./app /app
 RUN apt update 
-RUN apt install openssh-client
+RUN apt install openssh-client -y
 RUN pip install -r requirements.txt
 
 EXPOSE 8501
