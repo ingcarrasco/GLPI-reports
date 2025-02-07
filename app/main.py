@@ -222,6 +222,24 @@ data2 = pd.DataFrame(
 graph_tickets_tot_ing = px.pie(data2,labels='Etiqueta', values='Cantidad', title='Año('+op_anio+') mes('+op_mes+')')
 
 print(len(tickets_filtrado.index))
+
+tickets_abiertos = tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])]
+tickets_solucionados = tickets_abiertos
+tickets_abiertos = tickets_abiertos[tickets_abiertos['status']!=5]
+tickets_abiertos = tickets_abiertos[tickets_abiertos['status']!=6]
+tickets_solucionados = tickets_solucionados[tickets_solucionados['status']!=1]
+tickets_solucionados = tickets_solucionados[tickets_solucionados['status']!=2]
+tickets_solucionados = tickets_solucionados[tickets_solucionados['status']!=3]
+tickets_solucionados = tickets_solucionados[tickets_solucionados['status']!=4]
+tickets_solucionados['x'] = tickets_solucionados['date_creation'].dt.year
+
+tickets_solucionados['horas'] = (  tickets_solucionados.solvedate - tickets_solucionados.date_creation ) / pd.Timedelta(hours=1)
+tickets_solucionados['diferencia'] = (  tickets_solucionados.solvedate - tickets_solucionados.date_creation )
+tickets_solucionados
+mas_tiempo_resolver=tickets_solucionados['horas'].max()
+
+
+
 with col1:
     st.metric(label='Total de tickets (2021 Hasta hoy)', value=len(tickets.index))
     st.metric(label='1.Por agencia', value=0)
@@ -232,25 +250,25 @@ with col2:
     
     st.metric(label='Total año('+op_anio+') mes('+op_mes+')', value=len(tickets_filtrado.index))
     st.metric(label='2.Por usuario',value=0)
-    st.metric(label='6.Ticket con mas tiempo por resolver.',value=0)
+    st.metric(label='Ticket con mas tiempo por resolver. (Hr)',value=round(mas_tiempo_resolver,2))
 
 
 with col3:
     st.metric(label='Total ingeniero', value=len(tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])]))
-    st.metric(label='3.Abiertos',value=0)
+    st.metric(label='Abiertos',value=len(tickets_abiertos.index))
 
 
 promedio_tickets = len(tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])])/len(tickets_filtrado.index)
 
 with col4:
     st.metric(label='Promedio Tickets (%)', value=round(promedio_tickets*100,4))
-    st.metric(label='4.Terminados',value=0)
+    st.metric(label='Terminados',value=len(tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])])-len(tickets_abiertos.index))
 
 
-x = tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])]
-x = x[x['status']!=5]
-x = x[x['status']!=6]
-x
+
+tickets_abiertos
+
+ticket_ingeniero
 # 1 En Curso
 # 2 En Curso
 # 4 En Espera
