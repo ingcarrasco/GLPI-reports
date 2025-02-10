@@ -235,21 +235,21 @@ tickets_solucionados['x'] = tickets_solucionados['date_creation'].dt.year
 
 tickets_solucionados['horas'] = (  tickets_solucionados.solvedate - tickets_solucionados.date_creation ) / pd.Timedelta(hours=1)
 tickets_solucionados['diferencia'] = (  tickets_solucionados.solvedate - tickets_solucionados.date_creation )
-tickets_solucionados
+
+tiempo_promedio = tickets_solucionados['horas'].mean()
+
 mas_tiempo_resolver=tickets_solucionados['horas'].max()
 
 
 
 with col1:
     st.metric(label='Total de tickets (2021 Hasta hoy)', value=len(tickets.index))
-    st.metric(label='1.Por agencia', value=0)
-    st.metric(label='5.Tiempo promedio por ticket.',value=0)
+    st.metric(label='Tiempo promedio por ticket. (Hr)',value=round(tiempo_promedio,2))
     graph_tickets_tot_ing
     
 with col2:
     
     st.metric(label='Total año('+op_anio+') mes('+op_mes+')', value=len(tickets_filtrado.index))
-    st.metric(label='2.Por usuario',value=0)
     st.metric(label='Ticket con mas tiempo por resolver. (Hr)',value=round(mas_tiempo_resolver,2))
 
 
@@ -264,11 +264,10 @@ with col4:
     st.metric(label='Promedio Tickets (%)', value=round(promedio_tickets*100,4))
     st.metric(label='Terminados',value=len(tickets_filtrado[tickets_filtrado['id_ticket'].isin(ticket_ingeniero['tickets_id'])])-len(tickets_abiertos.index))
 
+st.metric(label='1.Por agencia', value=0)
+st.metric(label='2.Por usuario',value=0)
 
 
-tickets_abiertos
-
-ticket_ingeniero
 # 1 En Curso
 # 2 En Curso
 # 4 En Espera
